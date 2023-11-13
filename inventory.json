@@ -1,0 +1,29 @@
+{
+    "last_save": "12/11/2023 23:02:12",
+    "product format": {
+        "name": [
+            "quantity",
+            "buy_price",
+            "sell_price"
+        ]
+    },
+    "gross_income": 46.0,
+    "net_income": 59.0,
+    "products": {
+        "banana": [
+            74,
+            1.0,
+            2.0
+        ],
+        "kiwi": [
+            97,
+            2.0,
+            4.0
+        ],
+        "mela": [
+            31,
+            1.0,
+            2.0
+        ]
+    }
+}
