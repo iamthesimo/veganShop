@@ -1,5 +1,6 @@
-""" Vegan grocieries shop"""
-from copy import deepcopy
+""" Vegan grocieries shop """
+""" Be the change, go vegan """
+
 import json
 import os
 from datetime import datetime
@@ -72,10 +73,6 @@ class Inventory:
         cost = sold_product.sell_price * quantity
         self.gross_income += cost
         return cost
-
-    # def calculate_cost(self, product: Product, quantity: int) -> None:
-    #     self.cost += product.buy_price * quantity
-    #     return self.cost
 
     def update_inventory(self, product: Product) -> None:
         if product.name in self.inventory:
