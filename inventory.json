@@ -1,5 +1,5 @@
 {
-    "last_save": "14/11/2023 15:31:22",
+    "last_save": "14/11/2023 15:56:47",
     "product format": {
         "name": [
             "quantity",
@@ -7,21 +7,21 @@
             "sell_price"
         ]
     },
-    "gross_income": 0.0,
-    "net_income": 0.0,
+    "gross_income": 220.0,
+    "net_income": 110.0,
     "products": {
         "caco": [
-            10,
+            5,
             10.0,
             20.0
         ],
         "kiwi": [
-            95,
+            80,
             2.0,
             4.0
         ],
         "mela": [
-            55,
+            35,
             1.0,
             2.0
         ]

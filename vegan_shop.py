@@ -69,7 +69,7 @@ class Inventory:
         return earnings
 
     def update_gross_income(self, product, quantity: int) -> float:
-        sold_product = vegan_shop.inventory[product.name]
+        sold_product = self.inventory[product.name]
         cost = sold_product.sell_price * quantity
         self.gross_income += cost
         return cost
@@ -97,7 +97,7 @@ class Inventory:
                 self.update_quantity(product, -values["quantity"])
 
     def update_quantity(self, product: Product, quantity) -> None:
-        if abs(quantity) > self.inventory[product.name].quantity:
+        if abs(quantity) > self.inventory[product.name].quantity and quantity < 0:
             raise AssertionError(
                 "Quantità superiore alla quantità in magazzino, operazione annuallata"
             )
@@ -123,6 +123,21 @@ class Inventory:
             return True
         else:
             return False
+
+    def get_user_quantity(self, product_name: str):
+        exitFlag = False
+        input_quantity = get_user_input("Inserisci la quantità: ", int)
+        while input_quantity > self.inventory[product_name].quantity:
+            print(
+                f"Quantità superiore a quella in magazzino {self.inventory[product_name].quantity}"
+            )
+            input_quantity = get_user_input(
+                "Inserisci la quantità: (0 per annullare): ", int
+            )
+            if input_quantity == 0:
+                exitFlag = True
+                break
+        return input_quantity, exitFlag
 
 
 def load_inventory():
@@ -156,21 +171,6 @@ def get_user_input(message, data_type):
                 print("Quantità non valida, devi inserire un numero intero")
             elif data_type == float:
                 print("Quantità non valida, devi inserire un numero decimale")
-
-
-def get_user_quantity():
-    input_quantity = get_user_input("Inserisci la quantità: ", int)
-    while input_quantity > vegan_shop.inventory[input_name].quantity:
-        print(
-            f"Quantità superiore a quella in magazzino {vegan_shop.inventory[input_name].quantity}"
-        )
-        input_quantity = get_user_input(
-            "Inserisci la quantità: (0 per annullare): ", int
-        )
-        if input_name == 0:
-            exitFlag = True
-            break
-    return input_quantity, exitFlag
 
 
 if __name__ == "__main__":
@@ -219,6 +219,7 @@ if __name__ == "__main__":
                 case "vendita":
                     basket = []
                     add_product = "si"
+                    exitFlag = False
                     while add_product == "si":
                         item_list = [list(item.keys())[0] for item in basket]
                         input_name = (
@@ -239,7 +240,9 @@ if __name__ == "__main__":
                         if exitFlag:
                             break
                         if len(basket) == 0:
-                            input_quantity, exitFlag = get_user_quantity()
+                            input_quantity, exitFlag = vegan_shop.get_user_quantity(
+                                input_name
+                            )
                             if exitFlag:
                                 break
 
@@ -258,7 +261,9 @@ if __name__ == "__main__":
                             if input_name in item_list:
                                 pos = item_list.index(input_name)
                                 # il prodotto è nel carrello
-                                input_quantity, exitFlag = get_user_quantity()
+                                input_quantity, exitFlag = vegan_shop.get_user_quantity(
+                                    input_name
+                                )
                                 if exitFlag:
                                     break
                                 basket[pos][input_name]["quantity"] += input_quantity
@@ -269,7 +274,9 @@ if __name__ == "__main__":
 
                             else:
                                 # il prodotto non è nel carrello
-                                input_quantity, exitFlag = get_user_quantity()
+                                input_quantity, exitFlag = vegan_shop.get_user_quantity(
+                                    input_name
+                                )
                                 if exitFlag:
                                     break
                                 basket.append(
@@ -293,18 +300,25 @@ if __name__ == "__main__":
                     for product in basket:
                         vegan_shop.sell_products(basket)
 
-                    print("VENDITA REGISTRATA")
-                    basket_total = 0.0
+                    if len(basket) > 0:
+                        if any(
+                            quantity > 0
+                            for quantity in [
+                                list(item.values())[0]["quantity"] for item in basket
+                            ]
+                        ):
+                            print("VENDITA REGISTRATA")
+                            basket_total = 0.0
 
-                    for product in basket:
-                        basket_product = list(product.keys())[0]
-                        basket_partial = product[basket_product]["partial"]
-                        basket_total += basket_partial
-                        basket_quantity = product[basket_product]["quantity"]
-                        print(
-                            f"{basket_quantity} X {basket_product}: €{basket_partial}"
-                        )
-                    print(f"Totale: €{basket_total}")
+                            for product in basket:
+                                basket_product = list(product.keys())[0]
+                                basket_partial = product[basket_product]["partial"]
+                                basket_total += basket_partial
+                                basket_quantity = product[basket_product]["quantity"]
+                                print(
+                                    f"{basket_quantity} X {basket_product}: €{basket_partial}"
+                                )
+                            print(f"Totale: €{basket_total}")
 
                 case "profitti":
                     print(
