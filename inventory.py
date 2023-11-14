@@ -32,7 +32,8 @@ class Inventory:
     def __list__(self) -> list:
         sorted_inventory = sorted(self.inventory.values(), key=lambda x: x.name)
         return [
-            [item.name, item.quantity, item.sell_price] for item in sorted_inventory
+            [item.name, item.quantity, f"{item.sell_price:.2f}"]
+            for item in sorted_inventory
         ]
 
     def add_product(self, item: Product) -> None:
@@ -57,10 +58,12 @@ class Inventory:
             self.add_product(item)
 
     def update_quantity(self, item: Product, quantity) -> None:
-        if abs(quantity) > self.inventory[item.name].quantity and quantity < 0:
+        if quantity < 0 and abs(quantity) > self.inventory[item.name].quantity:
             raise AssertionError(
                 "Quantità superiore alla quantità in magazzino, operazione annuallata"
             )
+        elif quantity < 0 and abs(quantity) == self.inventory[item.name].quantity:
+            self.inventory.pop(item.name)
         else:
             self.inventory[item.name].quantity += quantity
 
@@ -68,9 +71,9 @@ class Inventory:
         for product in basket:
             for product_name, value in product.items():
                 item = self.inventory[product_name]
-                self.update_quantity(item, -value["quantity"])
                 self.update_gross_income(item, value["quantity"])
                 self.update_net_income(item, value["quantity"])
+                self.update_quantity(item, -value["quantity"])
 
     def save_inventory(self) -> None:
         now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
@@ -162,22 +165,18 @@ class Inventory:
                     basket_total += basket_partial
                     basket_quantity = product[basket_product]["quantity"]
                     print(
-                        f"{basket_quantity} X {basket_product}: €{basket_partial:.1f}"
+                        f"{basket_quantity} X {basket_product}: €{basket_partial:.2f}"
                     )
-                print(f"Totale: €{basket_total:.1f}")
+                print(f"Totale: €{basket_total:.2f}")
                 self.save_inventory()
 
     def add_to_inventory(self) -> None:
-        product_name = text_input("Inserisci il nome del prodotto: ")
-        product_quantity = get_user_input("Inserisci la quantità: ", int)
+        product_name = text_input("Nome del prodotto: ")
+        product_quantity = get_user_input("Quantità: ", int)
 
         if not self.product_exist(product_name):
-            product_buy_price = float(
-                get_user_input("Inserisci il prezzo di acquisto: ", float)
-            )
-            product_sell_price = float(
-                get_user_input("Inserisci il prezzo di vendita: ", float)
-            )
+            product_buy_price = float(get_user_input("Prezzo di acquisto: ", float))
+            product_sell_price = float(get_user_input("Prezzo di vendita: ", float))
             product = Product(
                 product_name,
                 product_quantity,
@@ -188,6 +187,7 @@ class Inventory:
         else:
             product = Product(product_name, product_quantity)
         self.update_inventory(product)
+        print(f"AGGIUNTO {product_quantity} X {product.name}")
 
     def product_exist(self, item_name: str) -> bool:
         return item_name in self.inventory
@@ -199,9 +199,7 @@ class Inventory:
             print(
                 f"Quantità superiore a quella in magazzino {self.inventory[item_name].quantity}"
             )
-            input_quantity = get_user_input(
-                "Inserisci la quantità: (0 per annullare): ", int
-            )
+            input_quantity = get_user_input("Inserisci la quantità: (0 annulla): ", int)
             if input_quantity == 0:
                 exitFlag = True
                 break

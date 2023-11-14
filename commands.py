@@ -32,5 +32,3 @@ def get_user_input(message, data_type) -> int or float:
                 print("Quantità non valida, devi inserire un numero intero")
             elif data_type == float:
                 print("Quantità non valida, devi inserire un numero decimale")
-
-

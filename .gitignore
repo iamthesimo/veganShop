@@ -2,3 +2,4 @@ veganShop.code-workspace
 test.py
 old_vegan_shop.py
 .gitignore
+__pycache__

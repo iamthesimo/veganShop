@@ -1,6 +1,6 @@
 import os
 from tabulate import tabulate
-from vegan_shop import Inventory, load_inventory
+from inventory import Inventory, load_inventory
 from commands import text_input, helper
 
 if __name__ == "__main__":
