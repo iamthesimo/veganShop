@@ -1,3 +1,4 @@
 veganShop.code-workspace
 test.py
-inventory.json
+old_vegan_shop.py
+.gitignore
