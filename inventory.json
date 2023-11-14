@@ -7,8 +7,8 @@
             "sell_price"
         ]
     },
-    "gross_income": 220.0,
-    "net_income": 110.0,
+    "gross_income": 0.0,
+    "net_income": 0.0,
     "products": {
         "caco": [
             5,
