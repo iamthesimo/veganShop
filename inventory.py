@@ -75,18 +75,6 @@ class Inventory:
                 self.update_net_income(item, value["quantity"])
                 self.update_quantity(item, -value["quantity"])
 
-    def save_inventory(self) -> None:
-        now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-        inventory_dict = {"last_save": now}
-        inventory_dict["product format"] = {
-            "name": ["quantity", "buy_price", "sell_price"]
-        }
-        inventory_dict["gross_income"] = self.gross_income
-        inventory_dict["net_income"] = self.net_income
-        inventory_dict["products"] = self.__dict__()
-        with open("inventory.json", "w") as f:
-            json.dump(inventory_dict, f, indent=4)
-
     def sell_shopping_cart(self) -> None:
         shopping_cart = []
         add_product = "si"
@@ -205,16 +193,27 @@ class Inventory:
                 break
         return input_quantity, exitFlag
 
+    def save_inventory(self) -> None:
+        now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+        inventory_dict = {"last_save": now}
+        inventory_dict["product format"] = {
+            "name": ["quantity", "buy_price", "sell_price"]
+        }
+        inventory_dict["gross_income"] = self.gross_income
+        inventory_dict["net_income"] = self.net_income
+        inventory_dict["products"] = self.__dict__()
+        with open("inventory.json", "w") as f:
+            json.dump(inventory_dict, f, indent=4)
 
-def load_inventory() -> Inventory:
-    with open("inventory.json", "r") as f:
-        inventory_dict = json.load(f)
-    inventory = Inventory()
-    for product, values in inventory_dict["products"].items():
-        inventory.add_product(Product(product, values[0], values[1], values[2]))
-    inventory.gross_income = inventory_dict["gross_income"]
-    inventory.net_income = inventory_dict["net_income"]
-    return inventory
+    def load_inventory():
+        with open("inventory.json", "r") as f:
+            inventory_dict = json.load(f)
+        inventory = Inventory()
+        for product, values in inventory_dict["products"].items():
+            inventory.add_product(Product(product, values[0], values[1], values[2]))
+        inventory.gross_income = inventory_dict["gross_income"]
+        inventory.net_income = inventory_dict["net_income"]
+        return inventory
 
 
 if __name__ == "__main__":

@@ -1,10 +1,10 @@
 import os
 from tabulate import tabulate
-from inventory import Inventory, load_inventory
+from inventory import Inventory
 from commands import text_input, helper
 
 if __name__ == "__main__":
-    vegan_shop = load_inventory() if os.path.exists("inventory.json") else Inventory()
+    vegan_shop = Inventory.load_inventory() if os.path.exists("inventory.json") else Inventory()
 
     user_cmd = ""
 
