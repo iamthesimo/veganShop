@@ -1,4 +1,5 @@
 """ Vegan grocieries shop"""
+from copy import deepcopy
 import json
 import os
 from datetime import datetime
@@ -61,47 +62,49 @@ class Inventory:
         return products
 
     def update_net_income(self, product, quantity: int) -> float:
-        self.net_income += self.update_gross_income(
-            product, quantity
-        ) - self.calculate_cost(product, quantity)
-        return self.net_income
+        sold_product = vegan_shop.inventory[product.name]
+        earnings = sold_product.sell_price - sold_product.buy_price
+        self.net_income += (earnings) * quantity
+        return earnings
 
     def update_gross_income(self, product, quantity: int) -> float:
         sold_product = vegan_shop.inventory[product.name]
-        self.gross_income += sold_product.sell_price * quantity
-        return self.gross_income
+        cost = sold_product.sell_price * quantity
+        self.gross_income += cost
+        return cost
 
-    def calculate_cost(self, product: Product, quantity: int) -> None:
-        self.cost += product.buy_price * quantity
-        return self.cost
+    # def calculate_cost(self, product: Product, quantity: int) -> None:
+    #     self.cost += product.buy_price * quantity
+    #     return self.cost
 
     def update_inventory(self, product: Product) -> None:
         if product.name in self.inventory:
-            self.update_quantity(product)
+            self.update_quantity(product, product.quantity)
         else:
             self.add_product(product)
 
     def add_product(self, product: Product) -> None:
         self.inventory[product.name] = product
 
-    def sell_product(self, product, quantity: int) -> None:
+    def sell_products(self, basket: list) -> None:
         # TODO, aggiorna quantità in modo corretto, rileggi le specifiche per capire cosa serve e ragiona sul flusso di cassa
         """
         aggiorna quantità
         aggiorna net_income
         """
-        if quantity <= 0:
-            raise AssertionError("La quantità deve essere maggiore di 0")
-        product = self.inventory[product]
-        self.update_quantity(product, -quantity)
-        self.update_net_income(product, quantity)
+        for item in basket:
+            for product_name, values in item.items():
+                product = self.inventory[product_name]
+                self.update_gross_income(product, values["quantity"])
+                self.update_net_income(product, values["quantity"])
+                self.update_quantity(product, -values["quantity"])
 
     def update_quantity(self, product: Product, quantity) -> None:
         if abs(quantity) > self.inventory[product.name].quantity:
             raise AssertionError(
                 "Quantità superiore alla quantità in magazzino, operazione annuallata"
             )
-        if quantity == self.inventory[product.name].quantity:
+        if abs(quantity) == self.inventory[product.name].quantity and quantity < 0:
             self.inventory.pop(product.name)
         else:
             self.inventory[product.name].quantity += quantity
@@ -147,12 +150,30 @@ def get_user_input(message, data_type):
         user_input = input(f"{message}")
         try:
             value = data_type(user_input)
-            return value
+            if value < 0:
+                raise ValueError("Il valore deve essere maggiore di 0")
+            else:
+                return value
         except ValueError:
             if data_type == int:
                 print("Quantità non valida, devi inserire un numero intero")
             elif data_type == float:
                 print("Quantità non valida, devi inserire un numero decimale")
+
+
+def get_user_quantity():
+    input_quantity = get_user_input("Inserisci la quantità: ", int)
+    while input_quantity > vegan_shop.inventory[input_name].quantity:
+        print(
+            f"Quantità superiore a quella in magazzino {vegan_shop.inventory[input_name].quantity}"
+        )
+        input_quantity = get_user_input(
+            "Inserisci la quantità: (0 per annullare): ", int
+        )
+        if input_name == 0:
+            exitFlag = True
+            break
+    return input_quantity, exitFlag
 
 
 if __name__ == "__main__":
@@ -161,11 +182,13 @@ if __name__ == "__main__":
     user_cmd = ""
 
     while user_cmd != "chiudi":
-        user_cmd = input("\nInserisci un comando: ").lower()
+        user_cmd = input("\nInserisci un comando: ").lower().strip()
         try:
             match user_cmd:
                 case "aggiungi":
-                    product_name = input("Inserisci il nome del prodotto: ")
+                    product_name = (
+                        input("Inserisci il nome del prodotto: ").lower().strip()
+                    )
                     product_quantity = get_user_input("Inserisci la quantità: ", int)
 
                     if not vegan_shop.product_exist(product_name):
@@ -197,57 +220,94 @@ if __name__ == "__main__":
                     )
 
                 case "vendita":
-                    product_list = []
+                    basket = []
                     add_product = "si"
                     while add_product == "si":
-                        input_product_name = input("Inserisci il nome del prodotto: ")
-                        if not vegan_shop.product_exist(input_product_name):
-                            raise AssertionError("Prodotto non presente in magazzino")
-                        if input_product_name in [
-                            product["product"] for product in product_list
-                        ]:
-                            input_product_quantity = get_user_input(
-                                "Inserisci la quantità: ", int
+                        item_list = [list(item.keys())[0] for item in basket]
+                        input_name = (
+                            input("Inserisci il nome del prodotto: ").lower().strip()
+                        )
+                        while not vegan_shop.product_exist(input_name):
+                            print("Prodotto terminato")
+                            input_name = (
+                                input(
+                                    "Inserisci il nome del prodotto: (fine per terminare)"
+                                )
+                                .lower()
+                                .strip()
                             )
-                            product_list[input_product_name][
-                                "quantity"
-                            ] += input_product_quantity
-                            product_list[input_product_name]["partial"] += (
-                                vegan_shop.inventory[input_product_name].sell_price
-                                * input_product_quantity
-                            )
-                        else:
-                            input_product_quantity = get_user_input(
-                                "Inserisci la quantità: ", int
-                            )
-                            # TODO sistemre il metodo append e renderlo coerente con la vendita
-                            # cerca di fare un oggetto, aggiungilo alla lista e vendi gli oggetti della lista
-                            # magari con prodotto e incrementandone solo la quantità con un metodo apposito
-                            product_list.append(
+                            if input_name == "fine":
+                                exitFlag = True
+                                break
+                        if exitFlag:
+                            break
+                        if len(basket) == 0:
+                            input_quantity, exitFlag = get_user_quantity()
+                            if exitFlag:
+                                break
+
+                            basket.append(
                                 {
-                                    input_product_name: {
-                                        "quantity": input_product_quantity,
+                                    input_name: {
+                                        "quantity": input_quantity,
                                         "partial": vegan_shop.inventory[
-                                            input_product_name
+                                            input_name
                                         ].sell_price
-                                        * input_product_quantity,
+                                        * input_quantity,
                                     }
                                 }
                             )
+                        else:
+                            if input_name in item_list:
+                                pos = item_list.index(input_name)
+                                # il prodotto è nel carrello
+                                input_quantity, exitFlag = get_user_quantity()
+                                if exitFlag:
+                                    break
+                                basket[pos][input_name]["quantity"] += input_quantity
+                                basket[pos][input_name]["partial"] += (
+                                    vegan_shop.inventory[input_name].sell_price
+                                    * input_quantity
+                                )
 
-                        add_product = input("Aggiungere un altro prodotto? (si/NO): ")
+                            else:
+                                # il prodotto non è nel carrello
+                                input_quantity, exitFlag = get_user_quantity()
+                                if exitFlag:
+                                    break
+                                basket.append(
+                                    {
+                                        input_name: {
+                                            "quantity": input_quantity,
+                                            "partial": vegan_shop.inventory[
+                                                input_name
+                                            ].sell_price
+                                            * input_quantity,
+                                        }
+                                    }
+                                )
 
-                    for product in product_list:
-                        vegan_shop.sell_product(product["product"], product["quantity"])
+                        add_product = (
+                            input("Aggiungere un altro prodotto? (si/NO): ")
+                            .lower()
+                            .strip()
+                        )
+
+                    for product in basket:
+                        vegan_shop.sell_products(basket)
 
                     print("VENDITA REGISTRATA")
-                    for product in product_list:
+                    basket_total = 0.0
+
+                    for product in basket:
+                        basket_product = list(product.keys())[0]
+                        basket_partial = product[basket_product]["partial"]
+                        basket_total += basket_partial
+                        basket_quantity = product[basket_product]["quantity"]
                         print(
-                            f"{product['quantity']} X {product['product']}: €{product['partial']}"
+                            f"{basket_quantity} X {basket_product}: €{basket_partial}"
                         )
-                    print(
-                        f"Totale: €{sum([product['partial'] for product in product_list])}"
-                    )
+                    print(f"Totale: €{basket_total}")
 
                 case "profitti":
                     print(
