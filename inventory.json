@@ -1,5 +1,5 @@
 {
-    "last_save": "14/11/2023 23:16:18",
+    "last_save": "15/11/2023 23:49:09",
     "product format": {
         "name": [
             "quantity",
@@ -7,11 +7,11 @@
             "sell_price"
         ]
     },
-    "gross_income": "620.00",
-    "net_income": "310.00",
+    "gross_income": 1022.0,
+    "net_income": 511.0,
     "products": {
         "banana": [
-            100,
+            79,
             1.0,
             2.0
         ],
@@ -41,7 +41,7 @@
             3.15
         ],
         "tofu": [
-            90,
+            100,
             2.0,
             4.0
         ]

@@ -1,15 +1,15 @@
 import os
-from tabulate import tabulate
 from inventory import Inventory
-from commands import text_input, helper
+from commands import get_text_input, helper
 
 if __name__ == "__main__":
     vegan_shop = Inventory.load_inventory() if os.path.exists("inventory.json") else Inventory()
+    vegan_shop.save_inventory()
 
     user_cmd = ""
 
     while user_cmd != "chiudi":
-        user_cmd = text_input("\nInserisci un comando: ")
+        user_cmd = get_text_input("\nInserisci un comando: ")
         try:
             match user_cmd:
                 case "aggiungi":
@@ -17,17 +17,11 @@ if __name__ == "__main__":
                     vegan_shop.save_inventory()
 
                 case "elenca":
-                    headers = ["PRODOTTO", "QUANTITA'", "PREZZO"]
-                    print(
-                        tabulate(
-                            vegan_shop.__list__(),
-                            headers=headers,
-                            tablefmt="simple_outline",
-                        )
-                    )
+                    print(vegan_shop)
 
                 case "vendita":
                     vegan_shop.sell_shopping_cart()
+                    vegan_shop.save_inventory()
 
                 case "profitti":
                     print(
@@ -35,18 +29,15 @@ if __name__ == "__main__":
                     )
 
                 case "aiuto":
-                    helper()
+                    print(helper())
 
                 case "chiudi":
                     vegan_shop.save_inventory()
 
                 case _:
                     print("Comando non valido")
-                    helper()
+                    print(helper())
 
-        except ValueError:
-            print(
-                "Il valore inserito non è valido, quantità, prezzo di acquisto e di vendita devono essere numeri"
-            )
         except Exception as e:
+            # eccezioni sono gestite nelle funzioni 
             print(e)

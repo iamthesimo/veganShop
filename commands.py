@@ -8,17 +8,19 @@ COMMANDS = {
 }
 
 
-def helper() -> None:
-    print("I comandi disponibili sono i seguenti: ")
+def helper() -> str:
+    cmd_list = ["I comandi disponibili sono i seguenti: "]
     for cmd, help in COMMANDS.items():
-        print(f"{cmd}: {help}")
+        cmd_list.append(f"{cmd}: {help}")
+    return '\n'.join(cmd_list)
 
 
-def text_input(msg):
+def get_text_input(msg) -> str:
     return input(msg).lower().strip()
 
 
-def get_user_input(message, data_type) -> int or float:
+def get_number_input(message, data_type) -> int or float:
+    # controllo che il valore inserito sia un numero e provoa a fare il casting a data_type
     while True:
         user_input = input(f"{message}")
         try:
