@@ -225,7 +225,7 @@ class Inventory:
             inventory.net_income = float(inventory_dict["net_income"])
             for product, properties in inventory_dict["products"].items():
                 inventory.add_product(
-                    Product(product, float(properties[0]), float(properties[1]), float(properties[2]))
+                    Product(product, int(properties[0]), float(properties[1]), float(properties[2]))
                 )
             return inventory
 
